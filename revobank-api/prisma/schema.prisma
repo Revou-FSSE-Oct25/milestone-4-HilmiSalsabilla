@@ -1,0 +1,101 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum AccountType {
+  SAVINGS
+  CHECKING
+  INVESTMENT
+}
+
+enum AccountStatus {
+  ACTIVE
+  INACTIVE
+  FROZEN
+}
+
+enum TransactionType {
+  DEPOSIT
+  WITHDRAWAL
+  TRANSFER
+}
+
+enum TransactionStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REVERSED
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  firstName String
+  lastName  String
+  phone     String?
+  role      Role     @default(USER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  accounts Account[]
+
+  @@index([email])
+  @@map("users")
+}
+
+model Account {
+  id            String        @id @default(uuid())
+  accountNumber String        @unique
+  type          AccountType   @default(SAVINGS)
+  status        AccountStatus @default(ACTIVE)
+  balance       Decimal       @default(0) @db.Decimal(18, 2)
+  currency      String        @default("USD")
+  userId        String
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  user                User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sentTransactions    Transaction[] @relation("SenderAccount")
+  receivedTransactions Transaction[] @relation("ReceiverAccount")
+
+  @@index([userId])
+  @@index([accountNumber])
+  @@map("accounts")
+}
+
+model Transaction {
+  id              String            @id @default(uuid())
+  type            TransactionType
+  status          TransactionStatus @default(COMPLETED)
+  amount          Decimal           @db.Decimal(18, 2)
+  description     String?
+  reference       String            @unique @default(uuid())
+  fromAccountId   String?
+  toAccountId     String?
+  balanceBefore   Decimal           @db.Decimal(18, 2)
+  balanceAfter    Decimal           @db.Decimal(18, 2)
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  fromAccount Account? @relation("SenderAccount", fields: [fromAccountId], references: [id])
+  toAccount   Account? @relation("ReceiverAccount", fields: [toAccountId], references: [id])
+
+  @@index([fromAccountId])
+  @@index([toAccountId])
+  @@index([reference])
+  @@map("transactions")
+}

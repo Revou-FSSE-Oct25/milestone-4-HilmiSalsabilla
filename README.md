@@ -1,98 +1,347 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# 🏦 RevoBank API
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+A secure, scalable RESTful banking API built with **NestJS**, **Prisma ORM**, and **PostgreSQL**.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+---
 
-## Description
+## 📋 Overview
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+RevoBank is a fictional financial institution's backend API that supports:
 
-## Project setup
+- **Customers** – view balances, initiate transfers, monitor transaction history
+- **Administrators** – manage users, review all accounts and transactions
 
-```bash
-$ npm install
+---
+
+## ✨ Features
+
+| Module | Endpoints |
+|--------|-----------|
+| 🔐 Auth | `POST /auth/register`, `POST /auth/login` |
+| 👤 User | `GET /user/profile`, `PATCH /user/profile` |
+| 🏦 Accounts | `POST`, `GET`, `GET /:id`, `PATCH /:id`, `DELETE /:id` `/accounts` |
+| 💸 Transactions | Deposit, Withdraw, Transfer, List, Detail |
+
+### Key Features
+- JWT-based authentication with role-based access control (USER / ADMIN)
+- Users can only access their own accounts and transactions
+- Admins have full access to all data
+- Atomic database transactions (deposit, withdraw, transfer)
+- Insufficient balance validation
+- Swagger / OpenAPI documentation at `/api/docs`
+- Comprehensive Jest unit test suite
+
+---
+
+## 🛠 Technologies
+
+| Category | Technology |
+|----------|------------|
+| Framework | NestJS 10 |
+| ORM | Prisma 5 |
+| Database | PostgreSQL (Supabase / TigerData for production) |
+| Auth | JWT (`@nestjs/jwt`, `passport-jwt`) |
+| Validation | `class-validator`, `class-transformer` |
+| Documentation | Swagger (`@nestjs/swagger`) |
+| Testing | Jest, `@nestjs/testing` |
+| Deployment | Render / Railway / Fly.io |
+
+---
+
+## 🗄 Database Schema
+
+```
+User ─────────────── Account ─────────────── Transaction
+ │                      │                        │
+ id (PK)               id (PK)                  id (PK)
+ email (UNIQUE)         accountNumber (UNIQUE)   type (DEPOSIT/WITHDRAWAL/TRANSFER)
+ password               type (SAVINGS/CHECKING)  amount
+ firstName              status (ACTIVE/FROZEN)   fromAccountId (FK → Account)
+ lastName               balance                  toAccountId   (FK → Account)
+ phone                  currency                 balanceBefore
+ role (USER/ADMIN)      userId (FK → User)       balanceAfter
+ createdAt              createdAt                reference (UNIQUE)
+ updatedAt              updatedAt                createdAt
 ```
 
-## Compile and run the project
+**Relationships:**
+- `User` → `Account`: one-to-many
+- `Account` → `Transaction`: one-to-many (as sender or receiver)
+
+---
+
+## 🚀 Local Setup
+
+### Prerequisites
+- Node.js 18+
+- PostgreSQL database (local or cloud)
+- npm
+
+### 1. Clone & Install
 
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+git clone https://github.com/your-username/revobank-api.git
+cd revobank-api
+npm install
 ```
 
-## Run tests
+### 2. Configure Environment
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+cp .env.example .env
 ```
 
-## Deployment
+Edit `.env`:
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+```env
+DATABASE_URL="postgresql://username:password@localhost:5432/revobank?schema=public"
+JWT_SECRET="your-super-secret-key-min-32-chars"
+JWT_EXPIRES_IN="7d"
+PORT=3000
+NODE_ENV=development
+```
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+### 3. Run Database Migrations
 
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+# Generate Prisma client
+npx prisma generate
+
+# Run migrations
+npx prisma migrate dev --name init
+
+# (Optional) Seed with sample data
+npm run prisma:seed
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+### 4. Start the Server
 
-## Resources
+```bash
+# Development (with hot reload)
+npm run start:dev
 
-Check out a few resources that may come in handy when working with NestJS:
+# Production
+npm run build
+npm run start:prod
+```
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+### 5. Access the API
 
-## Support
+| URL | Description |
+|-----|-------------|
+| `http://localhost:3000/api/v1` | Base API URL |
+| `http://localhost:3000/api/docs` | Swagger UI |
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+---
 
-## Stay in touch
+## 🔐 Authentication
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+All protected routes require a `Bearer` token in the `Authorization` header:
 
-## License
+```
+Authorization: Bearer <your_jwt_token>
+```
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+### Quick Start Flow
+
+```bash
+# 1. Register
+curl -X POST http://localhost:3000/api/v1/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"email":"you@example.com","password":"Password123!","firstName":"John","lastName":"Doe"}'
+
+# 2. Login → copy the access_token
+curl -X POST http://localhost:3000/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"you@example.com","password":"Password123!"}'
+
+# 3. Create an account
+curl -X POST http://localhost:3000/api/v1/accounts \
+  -H "Authorization: Bearer <token>" \
+  -H "Content-Type: application/json" \
+  -d '{"type":"SAVINGS"}'
+
+# 4. Deposit funds
+curl -X POST http://localhost:3000/api/v1/transactions/deposit \
+  -H "Authorization: Bearer <token>" \
+  -H "Content-Type: application/json" \
+  -d '{"accountId":"<account-id>","amount":1000,"description":"Initial deposit"}'
+```
+
+---
+
+## 📖 API Endpoints
+
+### Auth
+| Method | Endpoint | Auth | Description |
+|--------|----------|------|-------------|
+| POST | `/auth/register` | ❌ | Register new user |
+| POST | `/auth/login` | ❌ | Login, returns JWT |
+
+### Users
+| Method | Endpoint | Auth | Description |
+|--------|----------|------|-------------|
+| GET | `/user/profile` | ✅ | Get own profile |
+| PATCH | `/user/profile` | ✅ | Update own profile |
+
+### Accounts
+| Method | Endpoint | Auth | Description |
+|--------|----------|------|-------------|
+| POST | `/accounts` | ✅ | Create account |
+| GET | `/accounts` | ✅ | List accounts |
+| GET | `/accounts/:id` | ✅ | Get account details |
+| PATCH | `/accounts/:id` | ✅ | Update account |
+| DELETE | `/accounts/:id` | ✅ | Delete account (balance must be 0) |
+
+### Transactions
+| Method | Endpoint | Auth | Description |
+|--------|----------|------|-------------|
+| POST | `/transactions/deposit` | ✅ | Deposit to account |
+| POST | `/transactions/withdraw` | ✅ | Withdraw from account |
+| POST | `/transactions/transfer` | ✅ | Transfer between accounts |
+| GET | `/transactions` | ✅ | List transactions |
+| GET | `/transactions/:id` | ✅ | Get transaction details |
+
+---
+
+## 🧪 Running Tests
+
+```bash
+# Run all unit tests
+npm test
+
+# With coverage report
+npm run test:cov
+
+# Watch mode
+npm run test:watch
+```
+
+**Test coverage includes:**
+- AuthService: register, login, password hashing, duplicate email
+- AccountsService: CRUD, ownership checks, balance validation on delete
+- TransactionsService: deposit, withdraw (insufficient balance), transfer (same account, insufficient funds), access control
+- UserService: getProfile, updateProfile
+
+---
+
+## ☁️ Deployment
+
+### Deploy to Render
+
+1. Push code to GitHub
+2. Create new **Web Service** on [render.com](https://render.com)
+3. Connect your repo
+4. Set environment variables: `DATABASE_URL`, `JWT_SECRET`
+5. Build command: `npm ci && npx prisma generate && npm run build`
+6. Start command: `npx prisma migrate deploy && node dist/main`
+
+### Deploy to Railway
+
+```bash
+# Install Railway CLI
+npm install -g @railway/cli
+
+railway login
+railway init
+railway add postgresql       # provisions DB automatically
+railway up
+```
+
+### Deploy to Fly.io
+
+```bash
+# Install flyctl
+fly launch
+fly secrets set DATABASE_URL="..." JWT_SECRET="..."
+fly deploy
+```
+
+### Database Hosting
+
+| Platform | Free Tier | Notes |
+|----------|-----------|-------|
+| [Supabase](https://supabase.com) | 500MB | PostgreSQL, easy setup |
+| [Railway](https://railway.app) | $5 credit | Auto-provisions with app |
+| [Neon](https://neon.tech) | 0.5GB | Serverless PostgreSQL |
+
+---
+
+## 👥 Seed Accounts
+
+After running `npm run prisma:seed`:
+
+| Role | Email | Password |
+|------|-------|----------|
+| Admin | admin@revobank.com | Password123! |
+| User | alice@example.com | Password123! |
+| User | bob@example.com | Password123! |
+
+---
+
+## 📁 Project Structure
+
+```
+revobank-api/
+├── prisma/
+│   ├── schema.prisma          # DB schema (User, Account, Transaction)
+│   └── seed.ts                # Sample data seeder
+├── src/
+│   ├── auth/
+│   │   ├── dto/auth.dto.ts    # RegisterDto, LoginDto
+│   │   ├── auth.service.ts
+│   │   ├── auth.controller.ts
+│   │   ├── auth.module.ts
+│   │   ├── auth.service.spec.ts  # Unit tests
+│   │   └── jwt.strategy.ts
+│   ├── user/
+│   │   ├── dto/
+│   │   ├── user.service.ts
+│   │   ├── user.controller.ts
+│   │   ├── user.module.ts
+│   │   └── user.service.spec.ts
+│   ├── accounts/
+│   │   ├── dto/
+│   │   ├── accounts.service.ts
+│   │   ├── accounts.controller.ts
+│   │   ├── accounts.module.ts
+│   │   └── accounts.service.spec.ts
+│   ├── transactions/
+│   │   ├── dto/
+│   │   ├── transactions.service.ts
+│   │   ├── transactions.controller.ts
+│   │   ├── transactions.module.ts
+│   │   └── transactions.service.spec.ts
+│   ├── prisma/
+│   │   ├── prisma.service.ts
+│   │   └── prisma.module.ts
+│   ├── common/
+│   │   ├── guards/            # JwtAuthGuard, RolesGuard
+│   │   ├── decorators/        # @Public, @Roles, @CurrentUser
+│   │   └── filters/           # HttpExceptionFilter
+│   ├── app.module.ts
+│   └── main.ts                # Swagger setup, global pipes
+├── .env.example
+├── Dockerfile
+├── render.yaml
+├── railway.toml
+├── fly.toml
+└── README.md
+```
+
+---
+
+## 🔒 Security Notes
+
+- Passwords are hashed with **bcrypt** (salt rounds: 10)
+- JWT tokens expire after **7 days** (configurable)
+- Users cannot access other users' accounts or transactions
+- Route protection via global `JwtAuthGuard` — all routes are protected by default; use `@Public()` to opt out
+- Input validation via `class-validator` on all DTOs
+- Environment variables used for all secrets — never hardcoded
+
+---
+
+## 📄 License
+
+MIT
