@@ -1,6 +1,6 @@
 # 🏦 RevoBank API
 
-A secure, scalable RESTful banking API built with **NestJS**, **Prisma ORM**, and **PostgreSQL**.
+A secure, scalable RESTful banking API built with **NestJS**, **Prisma ORM**, and **PostgreSQL**. With [deployment link here](#5-access-the-api-and-deployment).
 
 ---
 
@@ -125,12 +125,14 @@ npm run build
 npm run start:prod
 ```
 
-### 5. Access the API
+### 5. Access the API and Deployment
 
 | URL | Description |
 |-----|-------------|
 | `http://localhost:3000/api/v1` | Base API URL |
 | `http://localhost:3000/api/docs` | Swagger UI |
+| https://milestone-4-hilmisalsabilla-production.up.railway.app/ | Base API URL |
+| https://milestone-4-hilmisalsabilla-production.up.railway.app/api/docs | Swagger UI |
 
 ---
 
